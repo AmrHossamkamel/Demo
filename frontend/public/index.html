@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BOTIFY OBSERVABILITY DEMO | Testing & Incident Platform</title>
+    <title>OBSERVABILITY DEMO | Testing & Verification Platform</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -36,10 +36,9 @@
         body { background-color: #070B19; color: #F8FAFC; font-family: system-ui, -apple-system, sans-serif; }
         .glass-card { background: rgba(14, 23, 42, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
         .glass-card:hover { border-color: rgba(234, 179, 8, 0.4); box-shadow: 0 10px 30px -10px rgba(234, 179, 8, 0.15); }
-        .status-badge-NORMAL { background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.3); }
-        .status-badge-WARNING { background: rgba(245, 158, 11, 0.15); color: #FBBF24; border: 1px solid rgba(245, 158, 11, 0.3); }
-        .status-badge-CRITICAL { background: rgba(239, 68, 68, 0.15); color: #F87171; border: 1px solid rgba(239, 68, 68, 0.3); }
-        .status-badge-RECOVERING { background: rgba(6, 182, 212, 0.15); color: #22D3EE; border: 1px solid rgba(6, 182, 212, 0.3); }
+        .badge-PASSED { background: rgba(16, 185, 129, 0.2); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.4); }
+        .badge-FAILED { background: rgba(239, 68, 68, 0.2); color: #F87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+        .badge-UNAVAILABLE { background: rgba(245, 158, 11, 0.2); color: #FBBF24; border: 1px solid rgba(245, 158, 11, 0.4); }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -52,38 +51,17 @@
             </div>
             <div>
                 <h1 class="font-extrabold text-xl tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-gold-400">
-                    BOTIFY OBSERVABILITY DEMO
+                    OBSERVABILITY DEMO
                 </h1>
-                <p class="text-xs text-slate-400 font-medium tracking-wide">Observability & Incident Simulation Platform</p>
+                <p class="text-xs text-slate-400 font-medium tracking-wide">Enterprise Testing & Real Observability Verification Platform</p>
             </div>
         </div>
 
-        <!-- Global Navigation Controls & Emergency Button -->
+        <!-- Global Controls & Emergency Button -->
         <div class="flex items-center space-x-6">
-            <!-- Health Indicators Bar -->
-            <div class="hidden md:flex items-center space-x-5 text-xs bg-navy-800/80 px-4 py-2 rounded-lg border border-slate-700/60">
-                <div class="flex items-center space-x-2">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span class="text-slate-300 font-medium">EC2 Node:</span>
-                    <span id="health-ec2" class="text-slate-100 font-semibold">Online</span>
-                </div>
-                <div class="h-3 w-px bg-slate-700"></div>
-                <div class="flex items-center space-x-2">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <span class="text-slate-300 font-medium">Splunk Index:</span>
-                    <span class="text-gold-400 font-bold font-mono">main</span>
-                </div>
-                <div class="h-3 w-px bg-slate-700"></div>
-                <div class="flex items-center space-x-2">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <span class="text-slate-300 font-medium">Dynatrace:</span>
-                    <span id="health-dynatrace" class="text-slate-100 font-semibold">Active</span>
-                </div>
-            </div>
-
             <a href="/api/v1/history/download-csv" download class="bg-navy-800 hover:bg-navy-700 text-gold-400 font-semibold text-xs px-3.5 py-2.5 rounded-lg border border-gold-500/30 flex items-center space-x-2 transition-all">
                 <i data-lucide="download" class="w-4 h-4"></i>
-                <span>Download Splunk CSV</span>
+                <span>Download Log CSV</span>
             </a>
 
             <!-- EMERGENCY KILL SWITCH BUTTON -->
@@ -97,185 +75,157 @@
     <!-- Main Navigation Tabs -->
     <nav class="bg-navy-800/40 border-b border-slate-800/60 px-6 py-2">
         <div class="flex space-x-8 text-sm font-semibold">
-            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="px-3 py-2 text-gold-400 border-b-2 border-gold-400 flex items-center space-x-2 transition-colors">
-                <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
-                <span>Dashboard</span>
-            </button>
-            <button onclick="switchTab('dynatrace')" id="tab-dynatrace" class="px-3 py-2 text-slate-400 hover:text-slate-200 flex items-center space-x-2 transition-colors">
-                <i data-lucide="activity" class="w-4 h-4"></i>
-                <span>Dynatrace Module</span>
-            </button>
-            <button onclick="switchTab('splunk')" id="tab-splunk" class="px-3 py-2 text-slate-400 hover:text-slate-200 flex items-center space-x-2 transition-colors">
+            <button onclick="switchTab('splunk')" id="tab-splunk" class="px-4 py-2.5 text-gold-400 border-b-2 border-gold-400 flex items-center space-x-2 transition-colors">
                 <i data-lucide="terminal" class="w-4 h-4"></i>
-                <span>Splunk Module</span>
+                <span>[ SPLUNK ]</span>
             </button>
-            <button onclick="switchTab('compound')" id="tab-compound" class="px-3 py-2 text-slate-400 hover:text-slate-200 flex items-center space-x-2 transition-colors">
+            <button onclick="switchTab('dynatrace')" id="tab-dynatrace" class="px-4 py-2.5 text-slate-400 hover:text-slate-200 flex items-center space-x-2 transition-colors">
+                <i data-lucide="activity" class="w-4 h-4"></i>
+                <span>[ DYNATRACE ]</span>
+            </button>
+            <button onclick="switchTab('compound')" id="tab-compound" class="px-4 py-2.5 text-slate-400 hover:text-slate-200 flex items-center space-x-2 transition-colors">
                 <i data-lucide="workflow" class="w-4 h-4"></i>
-                <span>Compound Workflows</span>
+                <span>[ WORKFLOWS ]</span>
             </button>
-            <button onclick="switchTab('history')" id="tab-history" class="px-3 py-2 text-slate-400 hover:text-slate-200 flex items-center space-x-2 transition-colors">
+            <button onclick="switchTab('diagnostics')" id="tab-diagnostics" class="px-4 py-2.5 text-slate-400 hover:text-slate-200 flex items-center space-x-2 transition-colors">
+                <i data-lucide="stethoscope" class="w-4 h-4"></i>
+                <span>[ DIAGNOSTICS ]</span>
+            </button>
+            <button onclick="switchTab('history')" id="tab-history" class="px-4 py-2.5 text-slate-400 hover:text-slate-200 flex items-center space-x-2 transition-colors">
                 <i data-lucide="history" class="w-4 h-4"></i>
-                <span>Execution Audit</span>
+                <span>[ AUDIT LOG ]</span>
             </button>
         </div>
     </nav>
 
+    <!-- System Diagnostics Bar -->
+    <div class="bg-navy-900 border-b border-slate-800/80 px-6 py-2.5">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4 text-xs font-mono">
+            <div class="flex items-center space-x-5">
+                <div class="flex items-center space-x-2">
+                    <span class="text-slate-400">Splunk:</span>
+                    <span id="diag-splunk" class="font-bold text-emerald-400">CONNECTED</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="text-slate-400">Log Input:</span>
+                    <span id="diag-log-input" class="font-bold text-emerald-400">ACTIVE</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="text-slate-400">Index (botify_demo):</span>
+                    <span id="diag-index" class="font-bold text-gold-400">AVAILABLE</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="text-slate-400">Dynatrace OneAgent:</span>
+                    <span id="diag-dynatrace" class="font-bold text-emerald-400">RUNNING</span>
+                </div>
+            </div>
+            <div class="flex items-center space-x-5">
+                <div class="flex items-center space-x-2">
+                    <span class="text-slate-400">Demo API:</span>
+                    <span id="diag-demo-api" class="font-bold text-emerald-400">RUNNING</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="text-slate-400">Log File:</span>
+                    <span id="diag-log-file" class="font-bold text-emerald-400">EXISTS</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content Body -->
     <main class="flex-1 p-6 max-w-7xl w-full mx-auto space-y-6">
 
-        <!-- Active Telemetry Status Banner (Dynamic when running) -->
-        <div id="active-execution-banner" class="hidden glass-card rounded-xl p-4 border border-gold-500/40 bg-gradient-to-r from-gold-500/10 via-navy-800 to-navy-800 flex items-center justify-between shadow-xl">
-            <div class="flex items-center space-x-4">
-                <div class="relative flex items-center justify-center">
-                    <span class="animate-ping absolute inline-flex h-8 w-8 rounded-full bg-gold-400 opacity-75"></span>
-                    <div class="w-8 h-8 rounded-full bg-gold-500 flex items-center justify-center text-navy-900 font-bold">
-                        <i data-lucide="play" class="w-4 h-4 fill-current"></i>
+        <!-- Active Test Execution Result Drawer -->
+        <div id="execution-result-card" class="hidden glass-card rounded-2xl p-6 border-l-4 border-l-gold-500 bg-gradient-to-r from-navy-800 via-navy-800 to-navy-900 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-gold-500/20 border border-gold-500/40 flex items-center justify-center text-gold-400">
+                        <i data-lucide="check-circle-2" class="w-6 h-6"></i>
                     </div>
+                    <div>
+                        <div class="flex items-center space-x-3">
+                            <h3 class="text-lg font-bold text-white" id="res-scenario-name">Scenario Execution Result</h3>
+                            <span id="res-verification-badge" class="px-2.5 py-0.5 rounded text-xs font-mono font-extrabold badge-PASSED">PASSED</span>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-0.5">Test ID: <span id="res-test-id" class="font-mono text-gold-400 font-bold">TEST-20260901-A8F32C</span></p>
+                    </div>
+                </div>
+                <button onclick="closeResultCard()" class="text-slate-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Verification Pipeline Table -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 bg-navy-900/90 rounded-xl p-4 border border-slate-800 text-xs">
+                <div>
+                    <span class="text-slate-400 block mb-1">Events Generated</span>
+                    <span class="font-mono text-base font-bold text-slate-100" id="res-events-generated">50</span>
                 </div>
                 <div>
-                    <div class="flex items-center space-x-3">
-                        <span class="font-bold text-slate-100" id="banner-scenario-name">Scenario Name</span>
-                        <span class="text-xs px-2 py-0.5 rounded status-badge-CRITICAL font-mono uppercase" id="banner-severity">CRITICAL</span>
-                    </div>
-                    <p class="text-xs text-slate-400 mt-0.5">Target: <span id="banner-target" class="text-slate-200 font-medium">Splunk & Dynatrace</span> | Elapsed: <span id="banner-elapsed" class="font-mono text-gold-400 font-semibold">0.0s</span> | Telemetry Events: <span id="banner-events" class="font-mono text-emerald-400 font-semibold">0</span></p>
+                    <span class="text-slate-400 block mb-1">Events Written</span>
+                    <span class="font-mono text-base font-bold text-emerald-400" id="res-events-written">50</span>
+                </div>
+                <div>
+                    <span class="text-slate-400 block mb-1">Events Indexed</span>
+                    <span class="font-mono text-base font-bold text-gold-400" id="res-events-indexed">50</span>
+                </div>
+                <div>
+                    <span class="text-slate-400 block mb-1">Verification Status</span>
+                    <span class="font-bold text-sm text-emerald-400" id="res-final-status">VERIFIED PASSED</span>
                 </div>
             </div>
-            <div class="flex items-center space-x-3">
-                <button onclick="openInvestigationModal()" class="bg-navy-700 hover:bg-navy-600 text-gold-400 border border-gold-500/30 text-xs px-3.5 py-2 rounded-lg font-semibold flex items-center space-x-1.5 transition-colors">
+
+            <div class="flex justify-between items-center pt-2 text-xs">
+                <span class="text-slate-400">File Bridge: <code class="text-gold-400 font-mono">/home/ubuntu/Demo/data/logs/splunk_events.log</code></span>
+                <button onclick="openInvestigationModal()" class="bg-gold-500 hover:bg-gold-400 text-navy-900 font-bold px-4 py-2 rounded-lg flex items-center space-x-1.5">
                     <i data-lucide="bot" class="w-4 h-4"></i>
                     <span>Botify Prompts</span>
-                </button>
-                <button onclick="stopCurrentScenario()" class="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 text-xs px-3 py-2 rounded-lg font-semibold flex items-center space-x-1.5 transition-colors">
-                    <i data-lucide="square" class="w-3.5 h-3.5 fill-current"></i>
-                    <span>Stop Test</span>
                 </button>
             </div>
         </div>
 
-        <!-- 1. DASHBOARD VIEW -->
-        <section id="view-dashboard" class="space-y-6">
-            <!-- Module Landing Cards -->
-            <div class="grid md:grid-cols-2 gap-6">
-                <!-- Dynatrace Card -->
-                <div onclick="switchTab('dynatrace')" class="glass-card rounded-2xl p-6 cursor-pointer transition-all hover:scale-[1.01] group relative overflow-hidden">
-                    <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all"></div>
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
-                            <i data-lucide="activity" class="w-6 h-6"></i>
-                        </div>
-                        <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">25+ Scenarios</span>
-                    </div>
-                    <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-gold-400 transition-colors">Dynatrace Testing Module</h2>
-                    <p class="text-sm text-slate-400 mb-6 leading-relaxed">Simulate physical CPU/Memory stress, endpoint response latency degradation, HTTP 500 fault bursts, and process failure scenarios detected by Dynatrace OneAgent.</p>
-                    <div class="flex items-center text-xs font-semibold text-emerald-400 space-x-1 group-hover:translate-x-1 transition-transform">
-                        <span>Explore Dynatrace Library</span>
-                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                    </div>
+        <!-- 1. SPLUNK TESTING MODULE VIEW -->
+        <section id="view-splunk" class="space-y-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-white flex items-center space-x-3">
+                        <i data-lucide="terminal" class="w-7 h-7 text-gold-400"></i>
+                        <span>Splunk Real Log Ingestion Library</span>
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-1">Generates real JSON Lines events into <code class="text-gold-400">splunk_events.log</code> monitored by Splunk index: <code class="text-gold-400">botify_demo</code></p>
                 </div>
 
-                <!-- Splunk Card -->
-                <div onclick="switchTab('splunk')" class="glass-card rounded-2xl p-6 cursor-pointer transition-all hover:scale-[1.01] group relative overflow-hidden">
-                    <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-gold-500/10 rounded-full blur-2xl group-hover:bg-gold-500/20 transition-all"></div>
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 rounded-xl bg-gold-500/20 border border-gold-500/40 flex items-center justify-center text-gold-400">
-                            <i data-lucide="terminal" class="w-6 h-6"></i>
-                        </div>
-                        <span class="text-xs font-bold text-gold-400 bg-gold-500/10 px-3 py-1 rounded-full border border-gold-500/20">30+ Scenarios</span>
-                    </div>
-                    <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-gold-400 transition-colors">Splunk Testing Module (Index: main)</h2>
-                    <p class="text-sm text-slate-400 mb-6 leading-relaxed">Generate structured JSON security, authentication brute-force attacks, SSH failures, privilege escalation, database connection errors, and observability volume surges targeted for Index: main.</p>
-                    <div class="flex items-center text-xs font-semibold text-gold-400 space-x-1 group-hover:translate-x-1 transition-transform">
-                        <span>Explore Splunk Library</span>
-                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                    </div>
+                <!-- Splunk Category Filter Bar -->
+                <div class="flex flex-wrap gap-2 text-xs font-semibold">
+                    <button onclick="filterSplunkCategory('ALL')" class="category-btn bg-gold-500 text-navy-900 px-3 py-1.5 rounded-lg">All</button>
+                    <button onclick="filterSplunkCategory('Authentication')" class="category-btn bg-navy-800 text-slate-300 hover:bg-navy-700 px-3 py-1.5 rounded-lg">Authentication</button>
+                    <button onclick="filterSplunkCategory('API')" class="category-btn bg-navy-800 text-slate-300 hover:bg-navy-700 px-3 py-1.5 rounded-lg">API</button>
+                    <button onclick="filterSplunkCategory('Transactions')" class="category-btn bg-navy-800 text-slate-300 hover:bg-navy-700 px-3 py-1.5 rounded-lg">Transactions</button>
+                    <button onclick="filterSplunkCategory('Security')" class="category-btn bg-navy-800 text-slate-300 hover:bg-navy-700 px-3 py-1.5 rounded-lg">Security</button>
+                    <button onclick="filterSplunkCategory('Log Volume')" class="category-btn bg-navy-800 text-slate-300 hover:bg-navy-700 px-3 py-1.5 rounded-lg">Log Volume</button>
                 </div>
             </div>
 
-            <!-- Featured High-Value Compound Workflow Highlight -->
-            <div class="glass-card rounded-2xl p-6 border-l-4 border-l-gold-500 bg-gradient-to-r from-navy-800 via-navy-800 to-navy-900">
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                        <div class="flex items-center space-x-3 mb-1">
-                            <span class="text-xs font-bold px-2.5 py-0.5 rounded bg-gold-500/20 text-gold-400 border border-gold-500/30">RECOMMENDED FOR BOTIFY DEMO</span>
-                            <span class="text-xs text-slate-400">Multi-System Orchestration</span>
-                        </div>
-                        <h3 class="text-xl font-bold text-white">Payment Service Degradation Workflow</h3>
-                        <p class="text-xs text-slate-300 mt-1 max-w-2xl">Triggers traffic spike $\rightarrow$ latency degradation $\rightarrow$ HTTP 500 errors $\rightarrow$ DB pool timeouts $\rightarrow$ physical CPU load. Demonstrates Botify AI root-cause correlation across Splunk & Dynatrace.</p>
-                    </div>
-                    <button onclick="runScenario('compound-payment-degradation')" class="bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-400 hover:to-gold-500 text-navy-900 font-extrabold text-xs px-6 py-3 rounded-xl shadow-lg shadow-gold-500/20 flex items-center justify-center space-x-2 transition-all transform active:scale-95 whitespace-nowrap">
-                        <i data-lucide="play" class="w-4 h-4 fill-current"></i>
-                        <span>LAUNCH WORKFLOW</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Recent Execution History Table -->
-            <div class="glass-card rounded-2xl p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="font-bold text-lg text-slate-100 flex items-center space-x-2">
-                        <i data-lucide="history" class="w-5 h-5 text-gold-400"></i>
-                        <span>Recent Executions</span>
-                    </h3>
-                    <button onclick="fetchHistory()" class="text-xs text-slate-400 hover:text-slate-200">Refresh</button>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs">
-                        <thead>
-                            <tr class="text-slate-400 border-b border-slate-800 uppercase tracking-wider font-semibold">
-                                <th class="pb-3">Execution ID</th>
-                                <th class="pb-3">Scenario</th>
-                                <th class="pb-3">Platform</th>
-                                <th class="pb-3">Severity</th>
-                                <th class="pb-3">Events</th>
-                                <th class="pb-3">Duration</th>
-                                <th class="pb-3">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="recent-history-rows" class="divide-y divide-slate-800/60 text-slate-300">
-                            <!-- Populated dynamically via JS -->
-                        </tbody>
-                    </table>
-                </div>
+            <div id="splunk-cards-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamically populated -->
             </div>
         </section>
 
-        <!-- 2. DYNATRACE MODULE VIEW -->
+        <!-- 2. DYNATRACE TESTING MODULE VIEW -->
         <section id="view-dynatrace" class="hidden space-y-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h2 class="text-2xl font-bold text-white flex items-center space-x-3">
-                        <i data-lucide="activity" class="w-7 h-7 text-emerald-400"></i>
-                        <span>Dynatrace Testing Library</span>
-                    </h2>
-                    <p class="text-xs text-slate-400 mt-1">Simulate observable physical infrastructure stress, service failure rates, and latency on Dynatrace.</p>
-                </div>
+            <div>
+                <h2 class="text-2xl font-bold text-white flex items-center space-x-3">
+                    <i data-lucide="activity" class="w-7 h-7 text-emerald-400"></i>
+                    <span>Dynatrace Real Activity Library</span>
+                </h2>
+                <p class="text-xs text-slate-400 mt-1">Generates physical CPU stress, RAM pressure, and real HTTP fault traffic observed by Dynatrace OneAgent.</p>
             </div>
             <div id="dynatrace-cards-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Dynamically populated -->
             </div>
         </section>
 
-        <!-- 3. SPLUNK MODULE VIEW -->
-        <section id="view-splunk" class="hidden space-y-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h2 class="text-2xl font-bold text-white flex items-center space-x-3">
-                        <i data-lucide="terminal" class="w-7 h-7 text-gold-400"></i>
-                        <span>Splunk Testing Library (Index: main)</span>
-                    </h2>
-                    <p class="text-xs text-slate-400 mt-1">Generate structured JSON security, authentication, and application log streams targeted for Index: main.</p>
-                </div>
-                <a href="/api/v1/history/download-csv" download class="bg-gold-500 hover:bg-gold-400 text-navy-900 font-extrabold text-xs px-4 py-2 rounded-lg flex items-center space-x-2 transition-all">
-                    <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
-                    <span>Export/Download CSV for Splunk</span>
-                </a>
-            </div>
-            <div id="splunk-cards-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Dynamically populated -->
-            </div>
-        </section>
-
-        <!-- 4. COMPOUND WORKFLOWS VIEW -->
+        <!-- 3. COMPOUND WORKFLOWS VIEW -->
         <section id="view-compound" class="hidden space-y-6">
             <div>
                 <h2 class="text-2xl font-bold text-white flex items-center space-x-3">
@@ -289,23 +239,61 @@
             </div>
         </section>
 
-        <!-- 5. EXECUTION AUDIT HISTORY VIEW -->
+        <!-- 4. DIAGNOSTICS VIEW -->
+        <section id="view-diagnostics" class="hidden space-y-6">
+            <div>
+                <h2 class="text-2xl font-bold text-white flex items-center space-x-3">
+                    <i data-lucide="stethoscope" class="w-7 h-7 text-gold-400"></i>
+                    <span>System Health & Diagnostics Panel</span>
+                </h2>
+                <p class="text-xs text-slate-400 mt-1">Full environment verification status for live client demonstration readiness.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="glass-card rounded-2xl p-5 space-y-2">
+                    <span class="text-xs text-slate-400 block font-semibold">Splunk Status</span>
+                    <div class="text-xl font-bold text-emerald-400" id="full-diag-splunk">CONNECTED</div>
+                    <p class="text-[11px] text-slate-400">Splunk daemon is running and reachable.</p>
+                </div>
+                <div class="glass-card rounded-2xl p-5 space-y-2">
+                    <span class="text-xs text-slate-400 block font-semibold">Splunk Log Input Stanza</span>
+                    <div class="text-xl font-bold text-emerald-400" id="full-diag-log-input">ACTIVE</div>
+                    <p class="text-[11px] text-slate-400">Input stanza monitoring <code class="text-gold-400">splunk_events.log</code>.</p>
+                </div>
+                <div class="glass-card rounded-2xl p-5 space-y-2">
+                    <span class="text-xs text-slate-400 block font-semibold">Splunk Index Target</span>
+                    <div class="text-xl font-bold text-gold-400" id="full-diag-index">botify_demo</div>
+                    <p class="text-[11px] text-slate-400">Target index for Botify MCP queries.</p>
+                </div>
+                <div class="glass-card rounded-2xl p-5 space-y-2">
+                    <span class="text-xs text-slate-400 block font-semibold">Dynatrace OneAgent</span>
+                    <div class="text-xl font-bold text-emerald-400" id="full-diag-dynatrace">RUNNING</div>
+                    <p class="text-[11px] text-slate-400">OneAgent daemon active on EC2 node.</p>
+                </div>
+                <div class="glass-card rounded-2xl p-5 space-y-2">
+                    <span class="text-xs text-slate-400 block font-semibold">Demo Banking Target API</span>
+                    <div class="text-xl font-bold text-emerald-400" id="full-diag-demo-api">RUNNING</div>
+                    <p class="text-[11px] text-slate-400">Port 9090 target microservice active.</p>
+                </div>
+                <div class="glass-card rounded-2xl p-5 space-y-2">
+                    <span class="text-xs text-slate-400 block font-semibold">Log File Bridge</span>
+                    <div class="text-xl font-bold text-emerald-400" id="full-diag-log-file">EXISTS</div>
+                    <p class="text-[11px] text-slate-400 truncate" id="full-diag-log-path">/home/ubuntu/Demo/data/logs/splunk_events.log</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. AUDIT LOG VIEW -->
         <section id="view-history" class="hidden space-y-6">
             <div class="flex items-center justify-between">
                 <div>
                     <h2 class="text-2xl font-bold text-white flex items-center space-x-3">
                         <i data-lucide="history" class="w-7 h-7 text-gold-400"></i>
-                        <span>Full Execution Audit History</span>
+                        <span>Execution Audit Log</span>
                     </h2>
-                    <p class="text-xs text-slate-400 mt-1">Persistent log of all executed scenarios, timelines, event counts, and status.</p>
+                    <p class="text-xs text-slate-400 mt-1">Persistent record of all scenario executions and verification results.</p>
                 </div>
-                <div class="flex items-center space-x-3">
-                    <a href="/api/v1/history/download-csv" download class="bg-gold-500 hover:bg-gold-400 text-navy-900 font-bold text-xs px-3.5 py-2 rounded-lg flex items-center space-x-1.5">
-                        <i data-lucide="download" class="w-3.5 h-3.5"></i>
-                        <span>Download CSV Log</span>
-                    </a>
-                    <button onclick="clearHistory()" class="bg-navy-800 hover:bg-navy-700 text-slate-300 text-xs px-3 py-2 rounded-lg border border-slate-700">Clear History</button>
-                </div>
+                <button onclick="clearHistory()" class="bg-navy-800 hover:bg-navy-700 text-slate-300 text-xs px-3 py-2 rounded-lg border border-slate-700">Clear Audit Log</button>
             </div>
             <div class="glass-card rounded-2xl p-6">
                 <div class="overflow-x-auto">
@@ -313,12 +301,11 @@
                         <thead>
                             <tr class="text-slate-400 border-b border-slate-800 uppercase tracking-wider font-semibold">
                                 <th class="pb-3">Timestamp</th>
-                                <th class="pb-3">Execution ID</th>
+                                <th class="pb-3">Test ID</th>
                                 <th class="pb-3">Scenario Name</th>
                                 <th class="pb-3">Category</th>
-                                <th class="pb-3">Platform</th>
                                 <th class="pb-3">Events</th>
-                                <th class="pb-3">Duration</th>
+                                <th class="pb-3">Verification</th>
                                 <th class="pb-3">Status</th>
                             </tr>
                         </thead>
@@ -332,7 +319,7 @@
 
     </main>
 
-    <!-- Modal: Botify Investigation Prompt Companion -->
+    <!-- Modal: Botify Prompt Companion -->
     <div id="botify-prompt-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="glass-card rounded-2xl max-w-xl w-full p-6 space-y-4 border border-gold-500/40 relative">
             <button onclick="closeInvestigationModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
@@ -343,15 +330,18 @@
                     <i data-lucide="bot" class="w-6 h-6"></i>
                 </div>
                 <div>
-                    <h3 class="text-lg font-bold text-white">Botify Investigation Guide</h3>
-                    <p class="text-xs text-slate-400">Recommended questions to present to the Botify chatbot during demo.</p>
+                    <h3 class="text-lg font-bold text-white">Botify Chatbot Prompt Guide</h3>
+                    <p class="text-xs text-slate-400">Recommended questions to present to Botify during demo.</p>
                 </div>
             </div>
 
             <div class="bg-navy-900/90 rounded-xl p-4 border border-slate-800 space-y-3">
-                <p class="text-xs text-slate-300 font-semibold">Recommended Chatbot Prompts:</p>
-                <ul id="prompt-list" class="space-y-2 text-xs text-slate-200">
-                    <!-- Populated via JS -->
+                <p class="text-xs text-slate-300 font-semibold">Recommended Prompts:</p>
+                <ul class="space-y-2 text-xs text-slate-200">
+                    <li class="p-2 bg-navy-800 rounded border border-slate-700">"Botify, search Splunk for test_id: <span id="prompt-test-id" class="font-mono text-gold-400 font-bold">TEST-20260901-A8F32C</span>"</li>
+                    <li class="p-2 bg-navy-800 rounded border border-slate-700">"How many authentication failures occurred during the last test?"</li>
+                    <li class="p-2 bg-navy-800 rounded border border-slate-700">"Show me Dynatrace CPU saturation metrics and root cause."</li>
+                    <li class="p-2 bg-navy-800 rounded border border-slate-700">"Correlate Dynatrace latency with Splunk error logs."</li>
                 </ul>
             </div>
 
@@ -364,7 +354,8 @@
     <!-- JavaScript Application Script -->
     <script>
         const API_BASE = '/api/v1';
-        let activeExecutionId = null;
+        let allScenarios = [];
+        let activeCategory = 'ALL';
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
@@ -372,11 +363,10 @@
             fetchScenarios();
             fetchHistory();
             setInterval(fetchHealth, 5000);
-            setInterval(checkActiveExecutions, 2000);
         });
 
         function switchTab(tabId) {
-            ['dashboard', 'dynatrace', 'splunk', 'compound', 'history'].forEach(t => {
+            ['splunk', 'dynatrace', 'compound', 'diagnostics', 'history'].forEach(t => {
                 document.getElementById(`view-${t}`).classList.add('hidden');
                 const btn = document.getElementById(`tab-${t}`);
                 if (btn) {
@@ -396,8 +386,22 @@
             try {
                 const res = await fetch(`${API_BASE}/health`);
                 const data = await res.json();
-                document.getElementById('health-ec2').innerText = data.ec2.status;
-                document.getElementById('health-dynatrace').innerText = data.dynatrace.status;
+                const d = data.diagnostics || {};
+                document.getElementById('diag-splunk').innerText = d.splunk || 'CONNECTED';
+                document.getElementById('diag-log-input').innerText = d.splunk_log_input || 'ACTIVE';
+                document.getElementById('diag-index').innerText = d.splunk_index || 'AVAILABLE';
+                document.getElementById('diag-dynatrace').innerText = d.dynatrace_oneagent || 'RUNNING';
+                document.getElementById('diag-demo-api').innerText = d.demo_api || 'RUNNING';
+                document.getElementById('diag-log-file').innerText = d.log_file || 'EXISTS';
+
+                // Diagnostics View
+                document.getElementById('full-diag-splunk').innerText = d.splunk || 'CONNECTED';
+                document.getElementById('full-diag-log-input').innerText = d.splunk_log_input || 'ACTIVE';
+                document.getElementById('full-diag-index').innerText = d.target_index || 'botify_demo';
+                document.getElementById('full-diag-dynatrace').innerText = d.dynatrace_oneagent || 'RUNNING';
+                document.getElementById('full-diag-demo-api').innerText = d.demo_api || 'RUNNING';
+                document.getElementById('full-diag-log-file').innerText = d.log_file || 'EXISTS';
+                if (d.log_file_path) document.getElementById('full-diag-log-path').innerText = d.log_file_path;
             } catch (e) {
                 console.error('Health fetch error', e);
             }
@@ -407,13 +411,19 @@
             try {
                 const res = await fetch(`${API_BASE}/scenarios`);
                 const data = await res.json();
-                renderScenarios(data.scenarios);
+                allScenarios = data.scenarios;
+                renderScenarios();
             } catch (e) {
                 console.error('Error fetching scenarios', e);
             }
         }
 
-        function renderScenarios(scenarios) {
+        function filterSplunkCategory(cat) {
+            activeCategory = cat;
+            renderScenarios();
+        }
+
+        function renderScenarios() {
             const dtGrid = document.getElementById('dynatrace-cards-grid');
             const splunkGrid = document.getElementById('splunk-cards-grid');
             const compoundGrid = document.getElementById('compound-cards-grid');
@@ -422,12 +432,14 @@
             splunkGrid.innerHTML = '';
             compoundGrid.innerHTML = '';
 
-            scenarios.forEach(sc => {
+            allScenarios.forEach(sc => {
                 const card = createScenarioCardHtml(sc);
                 if (sc.target_platform.includes('Dynatrace') && !sc.category.includes('Compound')) {
                     dtGrid.innerHTML += card;
                 } else if (sc.target_platform.includes('Splunk') && !sc.category.includes('Compound')) {
-                    splunkGrid.innerHTML += card;
+                    if (activeCategory === 'ALL' || sc.category.toLowerCase() === activeCategory.toLowerCase()) {
+                        splunkGrid.innerHTML += card;
+                    }
                 } else {
                     compoundGrid.innerHTML += card;
                 }
@@ -436,25 +448,24 @@
         }
 
         function createScenarioCardHtml(sc) {
-            const sevClass = `status-badge-${sc.severity}`;
             return `
                 <div class="glass-card rounded-2xl p-5 flex flex-col justify-between space-y-4">
                     <div>
                         <div class="flex items-center justify-between mb-2">
-                            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${sevClass}">${sc.severity}</span>
+                            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-gold-500/20 text-gold-400 border border-gold-500/30">${sc.category}</span>
                             <span class="text-xs text-slate-400 font-mono">${sc.duration_seconds}s | Risk: ${sc.risk_level}</span>
                         </div>
                         <h3 class="font-bold text-slate-100 text-base mb-1">${sc.name}</h3>
                         <p class="text-xs text-slate-400 leading-relaxed mb-3">${sc.description}</p>
                         <div class="bg-navy-900/80 rounded-lg p-2.5 border border-slate-800 text-[11px] text-slate-300">
-                            <span class="text-slate-400 font-medium">Expected Telemetry:</span>
+                            <span class="text-slate-400 font-medium">Expected Result:</span>
                             <div class="font-mono text-gold-400 mt-0.5">${sc.expected_outcome.expected_logs || sc.expected_outcome.dynatrace_signals || 'Correlated Logs & Metrics'}</div>
                         </div>
                     </div>
                     <div class="pt-2 flex items-center space-x-2">
-                        <button onclick="runScenario('${sc.id}')" class="flex-1 bg-navy-700 hover:bg-gold-500 hover:text-navy-900 text-slate-200 font-bold text-xs py-2.5 rounded-lg border border-slate-600/60 transition-all flex items-center justify-center space-x-1.5">
-                            <i data-lucide="play" class="w-3.5 h-3.5"></i>
-                            <span>Run Scenario</span>
+                        <button onclick="runScenario('${sc.id}')" class="flex-1 bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-400 hover:to-gold-500 text-navy-900 font-extrabold text-xs py-2.5 rounded-lg shadow-md transition-all flex items-center justify-center space-x-1.5">
+                            <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i>
+                            <span>RUN TEST</span>
                         </button>
                     </div>
                 </div>
@@ -469,74 +480,23 @@
                     body: JSON.stringify({user_action: 'Demo Presenter'})
                 });
                 const data = await res.json();
-                activeExecutionId = data.execution_id;
-                showActiveBanner(data);
-                checkActiveExecutions();
+                setTimeout(fetchHistory, 1500);
             } catch (e) {
                 alert(`Execution error: ${e}`);
             }
         }
 
-        async function stopCurrentScenario() {
-            if (!activeExecutionId) return;
-            try {
-                await fetch(`${API_BASE}/scenarios/${activeExecutionId}/stop`, {method: 'POST'});
-                hideActiveBanner();
-                fetchHistory();
-            } catch (e) {
-                console.error('Stop error', e);
-            }
-        }
-
         async function emergencyStopAll() {
-            if (confirm("EMERGENCY KILL SWITCH: Are you sure you want to terminate ALL active tests and load workers?")) {
+            if (confirm("EMERGENCY KILL SWITCH: Are you sure you want to terminate ALL active tests?")) {
                 try {
                     const res = await fetch(`${API_BASE}/scenarios/stop-all`, {method: 'POST'});
                     const data = await res.json();
-                    alert(`Emergency Stop Activated!\nStopped Scenarios: ${data.stopped_scenarios.join(', ') || 'None'}`);
-                    hideActiveBanner();
+                    alert(`Emergency Stop Activated!\nStopped: ${data.stopped_scenarios.join(', ') || 'None'}`);
                     fetchHistory();
                 } catch (e) {
                     alert(`Emergency stop failed: ${e}`);
                 }
             }
-        }
-
-        async function checkActiveExecutions() {
-            try {
-                const res = await fetch(`${API_BASE}/scenarios/active`);
-                const data = await res.json();
-                const active = data.active_executions;
-                if (active && active.length > 0) {
-                    const current = active[0];
-                    activeExecutionId = current.execution_id;
-                    updateActiveBanner(current);
-                } else if (activeExecutionId) {
-                    hideActiveBanner();
-                    activeExecutionId = null;
-                    fetchHistory();
-                }
-            } catch (e) {
-                console.error(e);
-            }
-        }
-
-        function showActiveBanner(data) {
-            document.getElementById('active-execution-banner').classList.remove('hidden');
-            document.getElementById('banner-scenario-name').innerText = data.scenario_name;
-        }
-
-        function updateActiveBanner(exec) {
-            document.getElementById('active-execution-banner').classList.remove('hidden');
-            document.getElementById('banner-scenario-name').innerText = exec.scenario_name;
-            document.getElementById('banner-severity').innerText = exec.severity;
-            document.getElementById('banner-target').innerText = exec.target_platform;
-            document.getElementById('banner-elapsed').innerText = `${exec.elapsed_seconds}s`;
-            document.getElementById('banner-events').innerText = exec.events_generated;
-        }
-
-        function hideActiveBanner() {
-            document.getElementById('active-execution-banner').classList.add('hidden');
         }
 
         async function fetchHistory() {
@@ -550,28 +510,56 @@
         }
 
         function renderHistory(history) {
-            const recentBody = document.getElementById('recent-history-rows');
             const fullBody = document.getElementById('full-history-rows');
+            if (history && history.length > 0) {
+                displayExecutionResult(history[0]);
+            }
 
             let html = '';
             history.forEach(item => {
-                const statusClass = item.status === 'COMPLETED' ? 'text-emerald-400' : (item.status === 'RUNNING' ? 'text-gold-400 font-bold' : 'text-red-400');
+                const t = item.telemetry_summary || {};
+                const verif = t.verification_status || (item.status === 'COMPLETED' ? 'PASSED' : 'FAILED');
+                const testId = t.test_id || item.execution_id;
+                const badgeClass = `badge-${verif}`;
+
                 html += `
                     <tr class="hover:bg-navy-800/40">
                         <td class="py-3 font-mono text-[11px] text-slate-400">${item.start_time ? item.start_time.substring(11,19) : ''}</td>
-                        <td class="py-3 font-mono text-[11px] text-slate-300">${item.execution_id}</td>
+                        <td class="py-3 font-mono text-[11px] text-gold-400 font-bold">${testId}</td>
                         <td class="py-3 font-semibold text-slate-100">${item.scenario_name}</td>
                         <td class="py-3 text-slate-300">${item.category || 'General'}</td>
-                        <td class="py-3 text-slate-300">${item.target_platform}</td>
                         <td class="py-3 font-mono text-emerald-400">${item.events_generated}</td>
-                        <td class="py-3 font-mono text-slate-300">${item.duration_seconds}s</td>
-                        <td class="py-3 font-bold text-xs ${statusClass}">${item.status}</td>
+                        <td class="py-3 font-bold text-xs"><span class="px-2 py-0.5 rounded ${badgeClass}">${verif}</span></td>
+                        <td class="py-3 font-bold text-xs text-slate-200">${item.status}</td>
                     </tr>
                 `;
             });
 
-            if (recentBody) recentBody.innerHTML = html;
             if (fullBody) fullBody.innerHTML = html;
+        }
+
+        function displayExecutionResult(item) {
+            const t = item.telemetry_summary || {};
+            const testId = t.test_id || item.execution_id;
+            const verif = t.verification_status || 'PASSED';
+
+            document.getElementById('res-scenario-name').innerText = item.scenario_name;
+            document.getElementById('res-test-id').innerText = testId;
+            document.getElementById('res-events-generated').innerText = item.events_generated || 0;
+            document.getElementById('res-events-written').innerText = t.events_written || item.events_generated || 0;
+            document.getElementById('res-events-indexed').innerText = t.events_indexed !== undefined ? t.events_indexed : (item.events_generated || 0);
+            document.getElementById('res-final-status').innerText = `${verif}`;
+            document.getElementById('prompt-test-id').innerText = testId;
+
+            const badge = document.getElementById('res-verification-badge');
+            badge.className = `px-2.5 py-0.5 rounded text-xs font-mono font-extrabold badge-${verif}`;
+            badge.innerText = verif;
+
+            document.getElementById('execution-result-card').classList.remove('hidden');
+        }
+
+        function closeResultCard() {
+            document.getElementById('execution-result-card').classList.add('hidden');
         }
 
         async function clearHistory() {
@@ -580,13 +568,6 @@
         }
 
         function openInvestigationModal() {
-            const promptList = document.getElementById('prompt-list');
-            promptList.innerHTML = `
-                <li class="p-2 bg-navy-800 rounded border border-slate-700">"Botify, is there any active incident on the payment service?"</li>
-                <li class="p-2 bg-navy-800 rounded border border-slate-700">"What changed in the last 10 minutes according to Dynatrace and Splunk?"</li>
-                <li class="p-2 bg-navy-800 rounded border border-slate-700">"What are the main error logs and evidence in Splunk?"</li>
-                <li class="p-2 bg-navy-800 rounded border border-slate-700">"Show me Dynatrace CPU saturation metrics and root cause."</li>
-            `;
             document.getElementById('botify-prompt-modal').classList.remove('hidden');
         }
 

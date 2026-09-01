@@ -10,17 +10,23 @@ class Settings(BaseSettings):
     EC2_HOST_NAME: str = "ec2-botify-demo-node"
     EC2_HOST_IP: str = "127.0.0.1"
 
+    # Splunk Configuration
     SPLUNK_HEC_URL: str = "http://localhost:8088/services/collector/event"
+    SPLUNK_REST_URL: str = "https://localhost:8089"
     SPLUNK_HEC_TOKEN: str = "demo-splunk-hec-token"
-    SPLUNK_INDEX: str = "main" # Updated directly to 'main' for Botify integration
+    SPLUNK_INDEX: str = "botify_demo"
+    SPLUNK_SOURCETYPE: str = "botify:demo"
     SPLUNK_LOG_FILE_PATH: str = "./data/logs/splunk_events.log"
+    SPLUNK_UBUNTU_LOG_FILE_PATH: str = "/home/ubuntu/Demo/data/logs/splunk_events.log"
     SPLUNK_CSV_FILE_PATH: str = "./data/logs/splunk_events.csv"
     SPLUNK_ENABLED: bool = True
 
+    # Dynatrace Configuration
     DYNATRACE_TENANT_URL: str = "http://localhost:9999"
     DYNATRACE_API_TOKEN: str = "demo-dt-token"
     DYNATRACE_ENABLED: bool = True
 
+    # Safety & Load Limits
     MAX_SCENARIO_DURATION_SECONDS: int = 300
     MAX_CPU_LOAD_PERCENT: int = 75
     MAX_MEMORY_ALLOCATION_MB: int = 1024
