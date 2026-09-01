@@ -12,8 +12,9 @@ class Settings(BaseSettings):
 
     SPLUNK_HEC_URL: str = "http://localhost:8088/services/collector/event"
     SPLUNK_HEC_TOKEN: str = "demo-splunk-hec-token"
-    SPLUNK_INDEX: str = "botify_demo_logs"
+    SPLUNK_INDEX: str = "main" # Updated directly to 'main' for Botify integration
     SPLUNK_LOG_FILE_PATH: str = "./data/logs/splunk_events.log"
+    SPLUNK_CSV_FILE_PATH: str = "./data/logs/splunk_events.csv"
     SPLUNK_ENABLED: bool = True
 
     DYNATRACE_TENANT_URL: str = "http://localhost:9999"

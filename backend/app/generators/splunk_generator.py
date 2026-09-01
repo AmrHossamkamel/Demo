@@ -1,6 +1,7 @@
 import os
 import time
 import json
+import csv
 import uuid
 import logging
 import requests
@@ -13,16 +14,34 @@ logger = logging.getLogger("splunk_generator")
 class SplunkGenerator:
     """
     Generates structured, searchable Splunk log events and transmits them
-    via local file stream (monitored by Splunk on EC2) or Splunk HEC.
+    via local JSON log stream, CSV export stream (for manual upload), and Splunk HEC.
+    Directly targets the 'main' index for seamless Botify AI integration.
     """
     def __init__(self):
         self.hec_url = settings.SPLUNK_HEC_URL
         self.hec_token = settings.SPLUNK_HEC_TOKEN
-        self.index = settings.SPLUNK_INDEX
+        self.index = settings.SPLUNK_INDEX or "main"
         self.primary_log_file = settings.SPLUNK_LOG_FILE_PATH # ./data/logs/splunk_events.log
+        self.primary_csv_file = getattr(settings, "SPLUNK_CSV_FILE_PATH", "./data/logs/splunk_events.csv")
         self.sys_log_file = "/var/log/botify_demo/app.log"
 
         os.makedirs(os.path.dirname(self.primary_log_file), exist_ok=True)
+        os.makedirs(os.path.dirname(self.primary_csv_file), exist_ok=True)
+
+        # Initialize CSV header if file doesn't exist
+        if not os.path.exists(self.primary_csv_file):
+            try:
+                with open(self.primary_csv_file, "w", newline="", encoding="utf-8") as f:
+                    writer = csv.writer(f)
+                    writer.writerow([
+                        "timestamp", "host", "source", "sourcetype", "service",
+                        "application", "severity", "event_type", "event_id",
+                        "client_ip", "username", "http_method", "endpoint",
+                        "status_code", "response_time", "message"
+                    ])
+            except Exception as e:
+                logger.error(f"Failed to initialize CSV log file: {e}")
+
         try:
             os.makedirs(os.path.dirname(self.sys_log_file), exist_ok=True)
         except Exception:
@@ -80,7 +99,32 @@ class SplunkGenerator:
         except Exception as e:
             logger.error(f"Failed to write log to primary file {self.primary_log_file}: {e}")
 
-        # 2. Write to system log file (/var/log/botify_demo/app.log) if writable
+        # 2. Append to local CSV file (./data/logs/splunk_events.csv) for direct CSV import
+        try:
+            with open(self.primary_csv_file, "a", newline="", encoding="utf-8") as f:
+                writer = csv.writer(f)
+                writer.writerow([
+                    event_data.get("timestamp"),
+                    event_data.get("host"),
+                    event_data.get("source"),
+                    event_data.get("sourcetype"),
+                    event_data.get("service"),
+                    event_data.get("application"),
+                    event_data.get("severity"),
+                    event_data.get("event_type"),
+                    event_data.get("event_id"),
+                    event_data.get("client_ip"),
+                    event_data.get("username"),
+                    event_data.get("http_method"),
+                    event_data.get("endpoint"),
+                    event_data.get("status_code"),
+                    event_data.get("response_time"),
+                    event_data.get("message")
+                ])
+        except Exception as e:
+            logger.error(f"Failed to write to CSV file {self.primary_csv_file}: {e}")
+
+        # 3. Write to system log file (/var/log/botify_demo/app.log) if writable
         try:
             if os.path.exists(os.path.dirname(self.sys_log_file)):
                 with open(self.sys_log_file, "a", encoding="utf-8") as f:
@@ -88,7 +132,7 @@ class SplunkGenerator:
         except Exception:
             pass
 
-        # 3. Transmit via HEC if configured & enabled
+        # 4. Transmit via HEC directly into index='main' if configured
         if settings.SPLUNK_ENABLED and self.hec_url and "demo-splunk-hec-token" not in self.hec_token:
             try:
                 payload = {
@@ -96,7 +140,7 @@ class SplunkGenerator:
                     "host": event_data["host"],
                     "source": event_data["source"],
                     "sourcetype": event_data["sourcetype"],
-                    "index": self.index,
+                    "index": self.index or "main",
                     "event": event_data
                 }
                 headers = {
