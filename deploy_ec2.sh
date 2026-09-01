@@ -13,7 +13,7 @@ if ! command -v python3 &> /dev/null; then
     sudo yum install -y python3 python3-pip || sudo apt-get update && sudo apt-get install -y python3 python3-pip
 fi
 
-# 2. Create required log directories
+# 2. Create required log directories with full read/write permissions
 echo "[+] Creating log directories..."
 mkdir -p ./data/logs
 sudo mkdir -p /var/log/botify_demo
@@ -29,7 +29,13 @@ if [ ! -f .env ]; then
     cp .env.example .env
 fi
 
-# 5. Launch Backend Engine
+# 5. Automatically configure Splunk file monitoring if Splunk CLI is present
+if command -v /opt/splunk/bin/splunk &> /dev/null; then
+    echo "[+] Configuring Splunk to monitor /var/log/botify_demo/app.log into index main..."
+    sudo /opt/splunk/bin/splunk add monitor /var/log/botify_demo/app.log -index main -sourcetype _json -auth admin:changeme 2>/dev/null || true
+fi
+
+# 6. Launch Backend Engine
 echo "================================================================"
 echo "  [SUCCESS] Botify Demo Platform is ready on EC2!"
 echo "  Access Web UI at: http://$(curl -s http://checkip.amazonaws.com 2>/dev/null || echo 'YOUR_EC2_IP'):9000"

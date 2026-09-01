@@ -11,10 +11,17 @@ from backend.app.config import settings
 
 logger = logging.getLogger("splunk_generator")
 
+CSV_HEADER = [
+    "timestamp", "host", "source", "sourcetype", "service",
+    "application", "severity", "event_type", "event_id",
+    "client_ip", "username", "http_method", "endpoint",
+    "status_code", "response_time", "message"
+]
+
 class SplunkGenerator:
     """
-    Generates structured, searchable Splunk log events and transmits them
-    via local JSON log stream, CSV export stream (for manual upload), and Splunk HEC.
+    Generates rich, structured Splunk log events and transmits them
+    via local JSON log stream, system log file, CSV export stream, and Splunk HEC.
     Directly targets the 'main' index for seamless Botify AI integration.
     """
     def __init__(self):
@@ -28,24 +35,65 @@ class SplunkGenerator:
         os.makedirs(os.path.dirname(self.primary_log_file), exist_ok=True)
         os.makedirs(os.path.dirname(self.primary_csv_file), exist_ok=True)
 
-        # Initialize CSV header if file doesn't exist
-        if not os.path.exists(self.primary_csv_file):
-            try:
-                with open(self.primary_csv_file, "w", newline="", encoding="utf-8") as f:
-                    writer = csv.writer(f)
-                    writer.writerow([
-                        "timestamp", "host", "source", "sourcetype", "service",
-                        "application", "severity", "event_type", "event_id",
-                        "client_ip", "username", "http_method", "endpoint",
-                        "status_code", "response_time", "message"
-                    ])
-            except Exception as e:
-                logger.error(f"Failed to initialize CSV log file: {e}")
+        # Initialize CSV file with header and realistic seed demo data if file is empty
+        self._ensure_csv_file_populated()
 
         try:
             os.makedirs(os.path.dirname(self.sys_log_file), exist_ok=True)
         except Exception:
             pass
+
+    def _ensure_csv_file_populated(self):
+        """Ensures CSV file exists, has clean headers, and contains initial demo log records."""
+        need_header = not os.path.exists(self.primary_csv_file) or os.path.getsize(self.primary_csv_file) == 0
+        if need_header:
+            try:
+                with open(self.primary_csv_file, "w", newline="", encoding="utf-8") as f:
+                    writer = csv.writer(f)
+                    writer.writerow(CSV_HEADER)
+                    # Write seed demo events so CSV is immediately populated with full banking errors
+                    seed_events = [
+                        self.create_event(
+                            event_type="DATABASE_CONNECTION_TIMEOUT",
+                            service="payment-service",
+                            severity="CRITICAL",
+                            client_ip="10.0.3.15",
+                            username="usr_8921",
+                            http_method="POST",
+                            endpoint="/api/v1/payments/process",
+                            status_code=504,
+                            response_time=3200,
+                            message="DB_CONNECTION_TIMEOUT on /api/v1/payments: HikariPool connection exhausted after 3000ms."
+                        ),
+                        self.create_event(
+                            event_type="FAILED_LOGIN_ATTEMPT",
+                            service="auth-service",
+                            severity="WARNING",
+                            client_ip="185.220.101.5",
+                            username="admin_alrajhi",
+                            http_method="POST",
+                            endpoint="/api/v1/auth/login",
+                            status_code=401,
+                            response_time=120,
+                            message="Authentication failed for user admin_alrajhi from IP 185.220.101.5. Invalid credential signature."
+                        ),
+                        self.create_event(
+                            event_type="HTTP_SERVER_ERROR",
+                            service="payment-service",
+                            severity="ERROR",
+                            client_ip="10.0.2.45",
+                            username="usr_1042",
+                            http_method="POST",
+                            endpoint="/api/v1/payments/process",
+                            status_code=500,
+                            response_time=2400,
+                            message="HTTP 500 Internal Server Error processing payment request. NullPointer in TransactionCore.java:142"
+                        )
+                    ]
+                    for ev in seed_events:
+                        writer.writerow([ev.get(col, "") for col in CSV_HEADER])
+            except Exception as e:
+                logger.error(f"Failed to initialize CSV file: {e}")
 
     def create_event(
         self,
@@ -99,28 +147,11 @@ class SplunkGenerator:
         except Exception as e:
             logger.error(f"Failed to write log to primary file {self.primary_log_file}: {e}")
 
-        # 2. Append to local CSV file (./data/logs/splunk_events.csv) for direct CSV import
+        # 2. Append to local CSV file (./data/logs/splunk_events.csv) with all fields
         try:
             with open(self.primary_csv_file, "a", newline="", encoding="utf-8") as f:
                 writer = csv.writer(f)
-                writer.writerow([
-                    event_data.get("timestamp"),
-                    event_data.get("host"),
-                    event_data.get("source"),
-                    event_data.get("sourcetype"),
-                    event_data.get("service"),
-                    event_data.get("application"),
-                    event_data.get("severity"),
-                    event_data.get("event_type"),
-                    event_data.get("event_id"),
-                    event_data.get("client_ip"),
-                    event_data.get("username"),
-                    event_data.get("http_method"),
-                    event_data.get("endpoint"),
-                    event_data.get("status_code"),
-                    event_data.get("response_time"),
-                    event_data.get("message")
-                ])
+                writer.writerow([event_data.get(col, "") for col in CSV_HEADER])
         except Exception as e:
             logger.error(f"Failed to write to CSV file {self.primary_csv_file}: {e}")
 
