@@ -62,7 +62,7 @@ class ProcessTracker:
         for pid in pids_to_kill:
             self._kill_pid(pid)
 
-    def stop_all() -> List[str]:
+    def stop_all(self) -> List[str]:
         """
         EMERGENCY KILL SWITCH: Terminates all active demo processes instantly and safely.
         """
@@ -107,7 +107,7 @@ class ProcessTracker:
         except Exception as e:
             logger.error(f"Error killing PID {pid}: {e}")
 
-    def get_active_summary() -> Dict[str, Any]:
+    def get_active_summary(self) -> Dict[str, Any]:
         with self._lock:
             return {
                 "active_scenario_count": len(self._active_scenarios),

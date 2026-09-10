@@ -1,0 +1,22 @@
+[Unit]
+Description=Botify Demo FastAPI application
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=botify
+Group=botify
+WorkingDirectory=/opt/botify-demo
+EnvironmentFile=/opt/botify-demo/.env
+ExecStart=/opt/botify-demo/.venv/bin/python /opt/botify-demo/run.py
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/opt/botify-demo/data
+
+[Install]
+WantedBy=multi-user.target
+
