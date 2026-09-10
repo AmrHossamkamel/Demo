@@ -9,6 +9,7 @@ from backend.app.config import settings
 from backend.app.api.scenarios import router as scenarios_router
 from backend.app.api.health import router as health_router
 from backend.app.api.history import router as history_router
+from backend.app.api.targets import router as targets_router
 from backend.app.demo_app.banking_service import demo_app
 
 app = FastAPI(
@@ -30,6 +31,7 @@ app.add_middleware(
 app.include_router(scenarios_router)
 app.include_router(health_router)
 app.include_router(history_router)
+app.include_router(targets_router)
 
 # Mount Target Demo Banking Sub-Application on /demo-app or embed endpoints
 app.mount("/demo-target", demo_app)

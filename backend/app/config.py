@@ -6,6 +6,10 @@ class Settings(BaseSettings):
     PORT: int = 9000
     DEMO_APP_PORT: int = 9090
     ENVIRONMENT: str = "development"
+    BOTIFY_AGENT_TOKEN: str = ""
+    BOTIFY_AGENT_TIMEOUT_SECONDS: float = 8.0
+    BOTIFY_AGENT_POLL_INTERVAL_SECONDS: float = 0.5
+    TARGETS_STORE_PATH: str = "./data/targets.json"
 
     EC2_HOST_NAME: str = "ec2-botify-demo-node"
     EC2_HOST_IP: str = "127.0.0.1"

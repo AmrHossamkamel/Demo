@@ -1,0 +1,5 @@
+__pycache__/
+*.py[cod]
+ec2-agent/node_modules/
+ec2-agent/dist/
+test_results.txt

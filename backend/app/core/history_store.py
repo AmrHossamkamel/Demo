@@ -42,14 +42,27 @@ class HistoryStore:
                         status TEXT NOT NULL,
                         parameters TEXT,
                         error_message TEXT,
-                        telemetry_summary TEXT
+                        telemetry_summary TEXT,
+                        target_id TEXT DEFAULT 'local',
+                        target_host TEXT DEFAULT 'localhost'
                     )
                 """)
+                # Existing installations predate target-aware execution.  Add
+                # the nullable metadata columns in-place so upgrades do not
+                # lose history or fail when the first targeted run is logged.
+                cursor.execute("PRAGMA table_info(scenario_history)")
+                existing = {row[1] for row in cursor.fetchall()}
+                for column, definition in {
+                    "target_id": "TEXT DEFAULT 'local'",
+                    "target_host": "TEXT DEFAULT 'localhost'",
+                }.items():
+                    if column not in existing:
+                        cursor.execute(f"ALTER TABLE scenario_history ADD COLUMN {column} {definition}")
                 conn.commit()
         except Exception as e:
             logger.error(f"Failed to initialize history database: {e}")
 
-    def log_start(self, execution_id: str, scenario_meta: Dict[str, Any], parameters: Dict[str, Any], user_action: str = "User") -> Dict[str, Any]:
+    def log_start(self, execution_id: str, scenario_meta: Dict[str, Any], parameters: Dict[str, Any], user_action: str = "User", target_id: str = "local", target_host: str = "localhost") -> Dict[str, Any]:
         record = {
             "execution_id": execution_id,
             "scenario_id": scenario_meta.get("id", "unknown"),
@@ -65,7 +78,9 @@ class HistoryStore:
             "status": "RUNNING",
             "parameters": json.dumps(parameters),
             "error_message": None,
-            "telemetry_summary": json.dumps(scenario_meta.get("expected_outcome", {}))
+            "telemetry_summary": json.dumps(scenario_meta.get("expected_outcome", {})),
+            "target_id": target_id,
+            "target_host": target_host
         }
 
         try:
@@ -75,11 +90,13 @@ class HistoryStore:
                     INSERT INTO scenario_history (
                         execution_id, scenario_id, scenario_name, category, target_platform,
                         severity, user_action, start_time, end_time, duration_seconds,
-                        events_generated, status, parameters, error_message, telemetry_summary
+                        events_generated, status, parameters, error_message, telemetry_summary,
+                        target_id, target_host
                     ) VALUES (
                         :execution_id, :scenario_id, :scenario_name, :category, :target_platform,
                         :severity, :user_action, :start_time, :end_time, :duration_seconds,
-                        :events_generated, :status, :parameters, :error_message, :telemetry_summary
+                        :events_generated, :status, :parameters, :error_message, :telemetry_summary,
+                        :target_id, :target_host
                     )
                 """, record)
                 conn.commit()
@@ -88,7 +105,7 @@ class HistoryStore:
 
         return record
 
-    def log_update(self, execution_id: str, status: str, events_generated: int = 0, error_message: Optional[str] = None):
+    def log_update(self, execution_id: str, status: str, events_generated: int = 0, error_message: Optional[str] = None, telemetry_summary: Optional[Dict[str, Any]] = None):
         end_time = None
         duration = 0.0
 
@@ -105,15 +122,18 @@ class HistoryStore:
                 if status in ["COMPLETED", "FAILED", "CANCELLED", "STOPPED"]:
                     end_time = datetime.datetime.utcnow().isoformat() + "Z"
 
+                telemetry_summary_json = json.dumps(telemetry_summary) if telemetry_summary else None
+
                 cursor.execute("""
                     UPDATE scenario_history
                     SET status = ?,
                         events_generated = ?,
                         error_message = ?,
                         end_time = COALESCE(?, end_time),
-                        duration_seconds = CASE WHEN ? > 0 THEN ? ELSE duration_seconds END
+                        duration_seconds = CASE WHEN ? > 0 THEN ? ELSE duration_seconds END,
+                        telemetry_summary = COALESCE(?, telemetry_summary)
                     WHERE execution_id = ?
-                """, (status, events_generated, error_message, end_time, duration, duration, execution_id))
+                """, (status, events_generated, error_message, end_time, duration, duration, telemetry_summary_json, execution_id))
                 conn.commit()
         except Exception as e:
             logger.error(f"Error updating scenario execution log: {e}")
