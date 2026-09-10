@@ -12,6 +12,12 @@ from typing import Any, Literal, Mapping
 from urllib.parse import urlsplit
 
 TargetType = Literal["local", "remote-agent"]
+_CANONICAL_TARGET_TYPES: dict[str, TargetType] = {
+    "local": "local",
+    "remote-agent": "remote-agent",
+    "ec2-agent": "remote-agent",
+    "agent": "remote-agent",
+}
 
 
 class TargetError(ValueError):
@@ -70,9 +76,10 @@ def _normalize_protocol(value: Any) -> Literal["http", "https"]:
 
 
 def _target_from_mapping(raw: Mapping[str, Any]) -> Target:
-    target_type = raw.get("type")
-    if target_type not in ("local", "remote-agent"):
-        raise TargetError("type must be 'local' or 'remote-agent'.")
+    raw_type = raw.get("type")
+    if not isinstance(raw_type, str) or raw_type.strip() not in _CANONICAL_TARGET_TYPES:
+        raise TargetError("type must be one of: 'local', 'remote-agent', 'ec2-agent', 'agent'.")
+    target_type: TargetType = _CANONICAL_TARGET_TYPES[raw_type.strip()]
     target = Target(
         id=_validate_identifier(raw.get("id"), "id"),
         name=_validate_name(raw.get("name")),

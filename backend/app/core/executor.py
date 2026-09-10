@@ -82,7 +82,6 @@ def get_executor(target: Optional[Target]) -> WorkloadExecutor:
     """Get the appropriate executor for a target."""
     if target is None or target.type == "local":
         return LocalWorkloadExecutor()
-    elif target.type == "remote-agent":
-        return RemoteAgentExecutor(target)
-    else:
-        raise ExecutorError(f"Unknown target type: {target.type}")
+    # Accept any remote target type (remote-agent, ec2-agent, agent — already canonicalized
+    # by TargetManager to 'remote-agent', but keep this branch broad for safety).
+    return RemoteAgentExecutor(target)

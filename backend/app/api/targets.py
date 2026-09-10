@@ -11,11 +11,14 @@ router = APIRouter(prefix="/api/v1/targets", tags=["Targets"])
 target_manager = TargetManager.from_settings(settings)
 
 
+_TargetType = Literal["remote-agent", "ec2-agent", "agent"]
+
+
 class TargetCreateRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     id: str = Field(min_length=1, max_length=128)
     name: str = Field(min_length=1, max_length=128)
-    type: Literal["remote-agent"] = "remote-agent"
+    type: _TargetType = "remote-agent"
     host: str
     port: int
     protocol: str
